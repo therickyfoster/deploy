@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- SECTION: HEAD & META -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Continuity Node — NextGen Field Kit</title>
+<meta name="description" content="Zero-budget, next‑gen continuity playbook with gamified drills, offline cache, and privacy‑first device identity."/>
+<style>
+/* SECTION: THEME TOKENS & BASE */
+  /* =============================================================
+     NEXTGEN THEME: neon dusk + glass panels + soft motion
+     All styles are self-contained. No external deps.
+  ============================================================= */
+  :root{
+    --bg:#0b0f14;            /* deep space */
+    --bg-soft:#0f1520;       /* panel bed */
+    --ink:#e6f1ff;           /* primary text */
+    --muted:#9fb3c8;         /* secondary text */
+    --glow-1:#7c3aed;        /* violet */
+    --glow-2:#22d3ee;        /* cyan */
+    --glow-3:#22c55e;        /* green */
+    --glow-4:#f59e0b;        /* amber */
+    --bad:#ef4444;
+    --good:#10b981;
+    --card:rgba(255,255,255,.06);
+    --border:rgba(255,255,255,.12);
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --radius:20px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell; color:var(--ink);
+    background:
+      radial-gradient(1200px 1200px at 120% -10%, rgba(124,58,237,.15), transparent 60%),
+      radial-gradient(1000px 1000px at -20% 10%, rgba(34,211,238,.12), transparent 60%),
+      linear-gradient(180deg, #0b0f14 0%, #0b0f14 100%);
+    overflow-x:hidden;
+  }
+  a{color:var(--glow-2); text-decoration:none}
+  .wrap{max-width:1180px; margin:0 auto; padding:28px;}
+
+  /* Header */
+  .hero{position:relative; margin:18px 0 26px; padding:20px; border-radius:var(--radius); background:var(--card); border:1px solid var(--border); box-shadow:var(--shadow);}
+  .title{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+  .title h1{margin:4px 0 0; font-size:clamp(22px, 4vw, 42px); letter-spacing:.3px; font-weight:800;}
+  .badge{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:linear-gradient(135deg, rgba(124,58,237,.3), rgba(34,211,238,.25)); border:1px solid var(--border); border-radius:999px; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:1px}
+  .hero p{margin:8px 0 0; color:var(--muted)}
+
+  /* Nav */
+  .tabs{display:flex; gap:10px; flex-wrap:wrap; margin:16px 0 0}
+  .tab{padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid var(--border); cursor:pointer; user-select:none}
+  .tab.active{background:linear-gradient(135deg, rgba(34,211,238,.18), rgba(124,58,237,.18));}
+
+  /* Grid */
+  .grid{display:grid; grid-template-columns:repeat(12, 1fr); gap:16px; margin-top:18px}
+  .col-4{grid-column:span 12}
+  .col-8{grid-column:span 12}
+  @media (min-width:900px){ .col-4{grid-column:span 4} .col-8{grid-column:span 8} }
+
+  /* Cards */
+  .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px}
+  .card h3{margin:0 0 8px}
+  .card p{margin:6px 0; color:var(--muted)}
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .chip{padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--border); font-size:12px;}
+
+  /* Progress */
+  .meter{height:12px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; overflow:hidden}
+  .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--glow-2), var(--glow-1)); transition:width .6s ease}
+
+  /* Buttons */
+  .btn{appearance:none; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--ink); padding:10px 14px; border-radius:12px; cursor:pointer}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.primary{background:linear-gradient(135deg, rgba(34,211,238,.22), rgba(124,58,237,.22));}
+  .btn.good{background:linear-gradient(135deg, rgba(34,197,94,.22), rgba(16,185,129,.22));}
+  .btn.bad{background:linear-gradient(135deg, rgba(239,68,68,.22), rgba(245,158,11,.22));}
+
+  /* Quest list */
+  .quest{display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px; border-radius:14px; border:1px dashed var(--border); background:rgba(255,255,255,.04); margin:10px 0}
+  .quest .name{font-weight:700}
+  .quest .desc{color:var(--muted); font-size:13px}
+
+  /* Achievements */
+  .achv{display:grid; grid-template-columns:1fr auto; gap:8px; padding:10px; margin:8px 0; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px}
+  .achv .tag{font-size:12px; color:var(--muted)}
+  .achv.locked{opacity:.55}
+
+  /* Identity modal */
+  .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(2,6,12,.65); backdrop-filter:saturate(140%) blur(12px);}
+  .modal.show{display:grid}
+  .dialog{width:min(720px, 94vw); background:var(--bg-soft); border:1px solid var(--border); border-radius:20px; padding:18px; box-shadow:var(--shadow)}
+  .dialog h2{margin:0}
+  textarea.seed{width:100%; min-height:74px; resize:vertical; background:rgba(255,255,255,.04); color:var(--ink); border:1px solid var(--border); border-radius:12px; padding:10px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
+
+  /* Footer */
+  footer{color:var(--muted); font-size:12px; padding:30px 10px; text-align:center}
+
+  /* Glow ring accents */
+  .glow{
+    position:relative; isolation:isolate;
+  }
+  .glow:before{
+    content:""; position:absolute; inset:-2px; z-index:-1; border-radius:inherit;
+    background:conic-gradient(from 180deg, var(--glow-2), var(--glow-1), var(--glow-3), var(--glow-2));
+    filter:blur(18px); opacity:.16;
+  }
+
+  /* Confetti */
+  .confetti{position:fixed; pointer-events:none; inset:0; overflow:hidden}
+  .flake{position:absolute; width:6px; height:10px; border-radius:2px; opacity:.9}
+
+
+  /* THEME VARIANTS + FUN EXTRAS */
+  :root[data-theme="light"]{
+    --bg:#f6fbff; --bg-soft:#ffffff; --ink:#0b1220; --muted:#516172; --card:rgba(0,0,0,.04); --border:rgba(0,0,0,.12);
+  }
+  :root[data-theme="high"]{
+    --bg:#000; --bg-soft:#000; --ink:#fff; --muted:#aab; --card:#000; --border:#fff4;
+  }
+  .hint{font-size:12px; color:var(--muted)}
+  .kbd{display:inline-block; padding:2px 6px; border-radius:6px; border:1px solid var(--border); background:rgba(255,255,255,.06); font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px}
+</style>
+</head>
+<body>
+<!-- SECTION: APP BODY START -->
+<div class="wrap">
+  <!-- SECTION: HERO / NAV -->
+  <section class="hero glow">
+    <div class="title">
+      <span class="badge">Continuity Node v1</span>
+      <h1>Post‑Collapse Field Kit — <span style="background:linear-gradient(90deg,var(--glow-2),var(--glow-1)); -webkit-background-clip:text; background-clip:text; color:transparent">Deploy Now</span></h1>
+    </div>
+    <p>Zero‑budget actions that young guardians can inherit. Gamified drills. Offline cache. Privacy‑first device identity (no MAC access).
+    </p>
+    <div class="tabs" role="tablist">
+      <div class="tab active" data-tab="deploy" role="tab" aria-selected="true">Deploy</div>
+      <div class="tab" data-tab="drills" role="tab">Drills</div>
+      <div class="tab" data-tab="identity" role="tab">Identity</div>
+      <div class="tab" data-tab="class" role="tab">Class</div>
+      <div class="tab" data-tab="streaks" role="tab">Streaks</div>
+      <div class="tab" data-tab="avatar" role="tab">Avatar</div>
+      <div class="tab" data-tab="crew" role="tab">Crew</div>
+      <div class="tab" data-tab="settings" role="tab">Settings</div>
+      <div class="tab" data-tab="logs" role="tab">Logs & Export</div>
+      <div class="tab" data-tab="about" role="tab">About</div>
+    </div>
+  </section>
+
+  <!-- SECTION: LAYOUT GRID -->
+  <div class="grid">
+    <!-- LEFT: XP / Roles / Achievements -->
+    <aside class="col-4">
+      <!-- SECTION: SIDEBAR — RANK/PROGRESS -->
+      <div class="card">
+        <h3>Rank & Progress</h3>
+        <p class="muted">Earn XP by completing real‑world continuity quests.</p>
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <div>
+            <div style="font-size:28px; font-weight:800" id="rankTitle">Initiate</div>
+            <div style="color:var(--muted)"><span id="xpVal">0</span> XP • L<span id="lvlVal">1</span> • Streak <b id="streakVal">0</b>🔥</div>
+          </div>
+          <canvas id="avatarMini" width="64" height="64" style="border-radius:12px; border:1px solid var(--border)"></canvas>
+        </div>
+        <div class="meter" style="margin-top:10px"><div class="bar" id="xpBar"></div></div>
+        <div class="row" style="margin-top:10px; justify-content:space-between">
+          <button class="btn primary" id="btnClaimDaily2">Claim Daily +5</button>
+          <span class="hint">Resets at local midnight • Next in <span id="ttl">—</span></span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>Guardian Role</h3>
+        <p class="muted">Choose a role. Each unlocks themed quests.</p>
+        <div class="row">
+          <button class="btn" data-role="Heat Warden">Heat Warden</button>
+          <button class="btn" data-role="Air Warden">Air Warden</button>
+          <button class="btn" data-role="Signal Warden">Signal Warden</button>
+        </div>
+        <p style="margin-top:10px">Current: <b id="roleVal">None</b></p>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>Achievements</h3>
+        <div id="achievements"></div>
+      </div>
+    </aside>
+
+    <!-- RIGHT: Dynamic Content by tab -->
+    <!-- SECTION: MAIN PANELS -->
+    <main class="col-8">
+      <!-- DEPLOY TAB -->
+      <!-- PANEL: DEPLOY -->
+      <section id="tab-deploy" class="card">
+        <h3>Deploy: Fast Wins</h3>
+        <p>Three quests you can run today. Each is teen‑teachable and cloneable.</p>
+        <div id="questList"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn good" id="btnAddCustom">+ Custom Quest</button>
+          <button class="btn" id="btnPrint">Print Field Card</button>
+        </div>
+      </section>
+
+      <!-- DRILLS TAB -->
+      <!-- PANEL: DRILLS -->
+      <section id="tab-drills" class="card" style="display:none">
+        <h3>Drills</h3>
+        <div class="quest">
+          <div>
+            <div class="name">Heat‑Blackout Drill</div>
+            <div class="desc">Mid‑day: simulate power loss. Set up cool‑room, pace activity, skin cooling. Log learnings.</div>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="completeQuest('Heat‑Blackout Drill',15)">Complete +15</button>
+          </div>
+        </div>
+        <div class="quest">
+          <div>
+            <div class="name">Aurora (Comms) Drill</div>
+            <div class="desc">Simulate internet/phone outage. Practice unplug protocol and bulletin hub loop.</div>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="completeQuest('Aurora Drill',15)">Complete +15</button>
+          </div>
+        </div>
+        <div class="quest">
+          <div>
+            <div class="name">Smoke‑Safe Room Setup</div>
+            <div class="desc">DIY purifier + MERV‑13 fan build. Verify PM drop if sensor available.</div>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="completeQuest('Smoke Room Drill',15)">Complete +15</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- IDENTITY TAB -->
+      <!-- PANEL: IDENTITY -->
+      <section id="tab-identity" class="card" style="display:none">
+        <h3>Device Identity (Private, Local)</h3>
+        <p class="muted">Browsers cannot access your MAC address (by design). We generate a <b>local, device‑bound keypair</b> and a <b>mnemonic</b> for recovery. <u>Never reuse this mnemonic for money or crypto wallets</u>. It’s only for this app.</p>
+        <div class="row" style="margin-top:8px">
+          <button class="btn primary" id="btnCreateId">Create / Recover Identity</button>
+          <button class="btn" id="btnShowPub">Show Public ID</button>
+          <button class="btn" id="btnExportId">Export Identity JSON</button>
+        </div>
+        <div style="margin-top:10px">
+          <div>Public ID: <code id="pubOut">—</code></div>
+          <div>Fingerprint: <code id="fpOut">—</code></div>
+        </div>
+        <details style="margin-top:12px">
+          <summary>Advanced (opt‑in): Deterministic seed from device hints</summary>
+          <p class="muted">For educational use only. Combines your typed secret with basic device hints (UA, platform, screen) to derive the same mnemonic on this device. Less private, do not use for funds.</p>
+          <input id="advSecret" placeholder="Enter your device secret" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--ink)"/>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="btnDeterministic">Generate Deterministic Seed</button>
+          </div>
+        </details>
+      </section>
+
+      <!-- LOGS TAB -->
+      <!-- PANEL: LOGS -->
+      <section id="tab-logs" class="card" style="display:none">
+        <h3>Impact Log</h3>
+        <p class="muted">Your actions, stored locally. Export to share or archive offline.</p>
+        <div id="logList"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnExportLog">Export .json</button>
+          <button class="btn" id="btnClearLog">Clear</button>
+        </div>
+      </section>
+
+      <!-- ABOUT TAB -->
+      <!-- PANEL: ABOUT -->
+      <section id="tab-about" class="card" style="display:none">
+        <h3>Zero‑Budget Continuity</h3>
+        <p>Designed to inspire “the young farts” to inherit patterns, not problems. Everything here runs client‑side and saves to your browser only.</p>
+        <ul>
+          <li>Quests: White roofs & shade blitz, smoke‑safe rooms, aurora drills.</li>
+          <li>Identity: ECDSA P‑256 keypair; private key encrypted with a mnemonic‑derived key (AES‑GCM). No servers.</li>
+          <li>Offline: Optional service worker caches this app (if your browser allows it from file/host).</li>
+        </ul>
+        <p style="color:var(--muted)">Security note: This seed & key are <b>not for money</b>. They are an app‑specific identity to sync logs between sessions on the <i>same device</i>, or to restore if you wipe storage. For crypto, use hardware wallets and audited libs.</p>
+      </section>
+          <!-- STREAKS TAB -->
+      <section id="tab-streaks" class="card" style="display:none">
+        <h3>Daily Streak</h3>
+        <p class="muted">Show up once a day and do one tiny action. Momentum beats overwhelm.</p>
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <div style="font-size:26px; font-weight:800">🔥 <span id="streakBig">0</span> days</div>
+          <button class="btn primary" id="btnClaimDailyBig">Claim Today +5</button>
+        </div>
+        <p class="hint" style="margin-top:8px">Tip: Add a <span class="kbd">homescreen</span> shortcut and tie claiming to brushing teeth or morning stretch.</p>
+      </section>
+
+      <!-- AVATAR TAB -->
+      <section id="tab-avatar" class="card" style="display:none">
+        <h3>Your Guardian Sigil</h3>
+        <p class="muted">Auto‑generated from your public key or fingerprint. No upload needed.</p>
+        <canvas id="avatarCanvas" width="200" height="200" style="border-radius:20px; border:1px solid var(--border)"></canvas>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnRerollAvatar">Reroll</button>
+          <button class="btn" id="btnSaveAvatar">Save PNG</button>
+        </div>
+      </section>
+
+      <!-- CREW TAB -->
+      <section id="tab-crew" class="card" style="display:none">
+        <h3>Crew</h3>
+        <p class="muted">Form a local squad without servers. Share a code, import a friend’s export, and compare XP (offline/local).</p>
+        <div>My Squad Code: <code id="squadCode">—</code> <button class="btn" id="btnCopyCode">Copy</button></div>
+        <div class="row" style="margin-top:10px">
+          <input id="friendCode" placeholder="Friend code or fingerprint" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--ink)"/>
+          <button class="btn" id="btnAddFriend">Add</button>
+        </div>
+        <div id="crewList" style="margin-top:10px"></div>
+      </section>
+
+      <!-- SETTINGS TAB -->
+      <section id="tab-settings" class="card" style="display:none">
+        <h3>Settings</h3>
+        <div class="row" style="gap:14px">
+          <button class="btn" id="btnThemeDark">Dark</button>
+          <button class="btn" id="btnThemeLight">Light</button>
+          <button class="btn" id="btnThemeHigh">High Contrast</button>
+          <button class="btn" id="btnSound">Sound: <span id="soundVal">On</span></button>
+        </div>
+        <div style="margin-top:12px">
+          <label class="hint">Font size</label>
+          <input type="range" id="fontRange" min="90" max="120" value="100"/>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn" id="btnInstall">Install App</button>
+          <button class="btn" id="btnImportState">Import State</button>
+          <button class="btn" id="btnExportState">Export State</button>
+        </div>
+      </section>
+
+      <!-- PANEL: STREAKS -->
+      <section id="tab-streaks" class="card" style="display:none">
+        <h3>Daily Streak</h3>
+        <p class="muted">Show up once a day and do one tiny action. Momentum beats overwhelm.</p>
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <div style="font-size:26px; font-weight:800">🔥 <span id="streakBig">0</span> days</div>
+          <button class="btn primary" id="btnClaimDailyBig">Claim Today +5</button>
+        </div>
+        <p class="hint" style="margin-top:8px">Tip: Add a <span class="kbd">homescreen</span> shortcut and tie claiming to brushing teeth or morning stretch.</p>
+      </section>
+
+      <!-- PANEL: AVATAR -->
+      <section id="tab-avatar" class="card" style="display:none">
+        <h3>Your Guardian Sigil</h3>
+        <p class="muted">Auto‑generated from your fingerprint/public key. No upload needed.</p>
+        <canvas id="avatarCanvas" width="200" height="200" style="border-radius:20px; border:1px solid var(--border)"></canvas>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnRerollAvatar">Reroll</button>
+          <button class="btn" id="btnSaveAvatar">Save PNG</button>
+        </div>
+      </section>
+
+      <!-- PANEL: CLASS SYSTEM -->
+      <section id="tab-class" class="card" style="display:none">
+        <h3>Choose Your Class</h3>
+        <p class="muted">You can switch freely until Level <b id="lockLvlOut">7</b>. After that, you’ll pick a permanent(ish) role. Each class adds passive bonuses and unique quests.</p>
+        <div id="classGrid" class="row"></div>
+        <div style="margin-top:12px">Current Class: <b id="classVal">None</b> • Locked: <b id="classLocked">No</b></div>
+      </section>
+
+      <!-- PANEL: CREW -->
+      <section id="tab-crew" class="card" style="display:none">
+        <h3>Crew</h3>
+        <p class="muted">Form a local squad without servers. Share a code, import a friend’s export, and compare XP (offline/local).</p>
+        <div>My Squad Code: <code id="squadCode">—</code> <button class="btn" id="btnCopyCode">Copy</button></div>
+        <div class="row" style="margin-top:10px">
+          <input id="friendCode" placeholder="Friend code or fingerprint" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--ink)"/>
+          <button class="btn" id="btnAddFriend">Add</button>
+        </div>
+        <div id="crewList" style="margin-top:10px"></div>
+      </section>
+
+      <!-- PANEL: SETTINGS -->
+      <section id="tab-settings" class="card" style="display:none">
+        <h3>Settings</h3>
+        <div class="row" style="gap:14px">
+          <button class="btn" id="btnThemeDark">Dark</button>
+          <button class="btn" id="btnThemeLight">Light</button>
+          <button class="btn" id="btnThemeHigh">High Contrast</button>
+          <button class="btn" id="btnSound">Sound: <span id="soundVal">On</span></button>
+        </div>
+        <div style="margin-top:12px">
+          <label class="hint">Font size</label>
+          <input type="range" id="fontRange" min="90" max="120" value="100"/>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn" id="btnInstall">Install App</button>
+          <button class="btn" id="btnImportState">Import State</button>
+          <button class="btn" id="btnExportState">Export State</button>
+        </div>
+      </section>
+
+</main>
+  </div>
+</div>
+
+<!-- Identity Modal -->
+<div class="modal" id="modal">
+  <div class="dialog">
+    <h2>Device Identity</h2>
+    <p class="muted">Create or recover. Your mnemonic never leaves this device. Keep a paper copy safe. Do <b>not</b> reuse for money.</p>
+    <textarea class="seed" id="seedBox" placeholder="Click \"New Seed\" or paste your 12 words here…"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnNewSeed">New Seed</button>
+      <button class="btn" id="btnCopySeed">Copy</button>
+      <button class="btn good" id="btnUseSeed">Use This Seed</button>
+      <button class="btn bad" id="btnCloseModal">Close</button>
+    </div>
+    <details style="margin-top:12px"><summary>Privacy</summary>
+      <p class="muted">No MAC address is accessed. Browsers block it for your safety. We use secure randomness (or opt‑in deterministic hints) to derive a mnemonic, then encrypt the private key with it.</p>
+    </details>
+  </div>
+</div>
+
+<div class="confetti" id="confetti"></div>
+
+<script>
+// SECTION: SCRIPT START
+// =============================================================
+// UTILITIES
+// =============================================================
+const $ = (sel)=>document.querySelector(sel);
+const $$ = (sel)=>document.querySelectorAll(sel);
+const CLASS_LOCK_LEVEL = 7; // You can change class freely until reaching this level.
+const CLASSES = [
+  {id:'Ranger', color:'#22c55e', perk:'+10% XP from outdoor quests', desc:'Field ops, shade canopies, water runs, patrols.'},
+  {id:'Druid', color:'#84cc16', perk:'Smoke resistance drills unlock', desc:'Micro‑forests, soil, pollinator corridors.'},
+  {id:'Smith', color:'#f59e0b', perk:'+1 tool slot & maker quests', desc:'Repair, DIY purifiers, shade rigs.'},
+  {id:'Sage', color:'#38bdf8', perk:'Wellness cooldowns & first‑aid', desc:'Heat protocols, pulse checks, buddy system.'},
+  {id:'Scribe', color:'#a78bfa', perk:'+15% XP from logs', desc:'Mapping, knowledge caches, SOP cards.'},
+  {id:'Herald', color:'#22d3ee', perk:'Crew boost: +1 friend slot', desc:'Bulletin hubs, drills, recruiting.'},
+  {id:'Navigator', color:'#e879f9', perk:'Quest chain discovery', desc:'Route planning, resource triage, logistics.'}
+];
+
+const state = {
+  xp: 0, level: 1, role: null, achievements: {}, quests: [], logs: [],
+  identity: null, // {pubJwk, privEnc:{iv, data}, fingerprint}
+  class: null, classLocked:false, lastDaily:null, streak:0, settings:{theme:'dark', sound:true, font:100}, crew:[]
+};
+const STORAGE_KEY = 'cn_state_v1';
+const ID_KEY = 'cn_identity_v1';
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({xp:state.xp, level:state.level, role:state.role, achievements:state.achievements, quests:state.quests, logs:state.logs})); }
+function load(){
+  try{ const o = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); Object.assign(state, o); }catch(e){}
+}
+function saveId(){ if(state.identity){ localStorage.setItem(ID_KEY, JSON.stringify(state.identity)); } }
+function loadId(){ try{ const o = JSON.parse(localStorage.getItem(ID_KEY)||'null'); if(o) state.identity = o; }catch(e){} }
+
+// Tiny wordlist (educational; not BIP‑39). Do NOT use for funds.
+const WORDS = `acorn,arrow,atlas,aurora,beacon,berry,blade,blaze,bridge,brook,burst,calm,cedar,celest,chant,clay,climb,cloud,comet,core,craft,crest,crisp,cycle,dawn,delta,dream,ember,field,flint,flow,forge,fox,frame,fresh,gate,glade,glow,grain,grove,guard,harbor,haze,heart,hearth,helix,heron,honey,horizon,ice,iris,ivy,keeper,kestrel,kite,knoll,lagoon,leaf,linen,lumen,lyric,maple,meadow,merit,mint,moon,moss,murmur,nest,Newfound,night,nomad,north,nova,oaken,oasis,ocean,orbit,orchid,orchard,origin,otter,palm,parcel,path,pebble,petal,phase,pillar,pine,plume,prism,pulse,quartz,quiet,radar,ragged,rail,ramble,reef,ridge,river,rover,run,rupee,sage,sailor,silk,sketch,sky,slate,smoke,sol,sonar,soot,sprig,spring,spyglass,star,stem,stone,storm,story,stream,studio,summit,sun,swift,talon,tarry,teal,terra,thrive,thrush,timber,tinder,tiny,titan,trail,tree,tribe,truce,trunk,twine,valor,veil,verge,verdant,verse,vessel,via,virga,vision,void,walker,warden,warmth,wave,weather,whale,whisper,willow,wind,wing,winter,wood,world,young,zephyr`.
+  split(',').map(w=>w.trim());
+
+function randSeedWords(n=12){
+  const bytes = new Uint8Array(n);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b=>WORDS[b % WORDS.length]).join(' ');
+}
+
+async function sha256Hex(buf){
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function importJwk(jwk, usage){
+  return crypto.subtle.importKey('jwk', jwk, {name:'ECDSA', namedCurve:'P-256'}, true, usage);
+}
+
+async function exportSpki(key){ return crypto.subtle.exportKey('spki', key); }
+async function exportJwk(key){ return crypto.subtle.exportKey('jwk', key); }
+
+async function pbkdf2KeyFromMnemonic(mnemonic){
+  const enc = new TextEncoder();
+  const salt = enc.encode('cn-v1|seed');
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(mnemonic), {name:'PBKDF2'}, false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:150000, hash:'SHA-256'}, baseKey, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+}
+
+async function aesEncryptJson(obj, akey){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = await crypto.subtle.encrypt({name:'AES-GCM', iv}, akey, new TextEncoder().encode(JSON.stringify(obj)));
+  return {iv: Array.from(iv), data: Array.from(new Uint8Array(data))};
+}
+async function aesDecryptJson(pack, akey){
+  const {iv, data} = pack; const buf = new Uint8Array(data);
+  const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv:new Uint8Array(iv)}, akey, buf);
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+function dl(filename, text){
+  const blob = new Blob([text], {type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url), 500);
+}
+
+function confettiBurst(){
+  const root = $('#confetti');
+  const colors = ['#22d3ee','#7c3aed','#22c55e','#f59e0b'];
+  for(let i=0;i<80;i++){
+    const f = document.createElement('div'); f.className='flake';
+    f.style.background = colors[Math.floor(Math.random()*colors.length)];
+    f.style.left = Math.random()*100+'%'; f.style.top = '-10px';
+    const dur = 1200 + Math.random()*1600; const dx = (Math.random()*2-1)*120;
+    f.animate([
+      {transform:`translate(0,0) rotate(0deg)`},
+      {transform:`translate(${dx}px, 110vh) rotate(${Math.random()*720-360}deg)`}
+    ], {duration:dur, easing:'cubic-bezier(.2,.6,.2,1)'});
+    root.appendChild(f); setTimeout(()=>f.remove(), dur+50);
+  }
+}
+
+// =============================================================
+// GAMIFICATION
+// =============================================================
+const RANKS = [
+  {lvl:1, title:'Initiate'},
+  {lvl:2, title:'Scout'},
+  {lvl:3, title:'Warden'},
+  {lvl:4, title:'Architect'},
+  {lvl:5, title:'Overstory' }
+];
+
+const BASE_QUESTS = [
+  {name:'White Roof & Shade Blitz', xp:25, desc:'Brighten roofs, hang light shade sails. Teach heat pacing.'},
+  {name:'Smoke‑Safe Room Build', xp:25, desc:'DIY MERV‑13 box fan purifier + clean‑air room.'},
+  {name:'Aurora Drill', xp:20, desc:'Unplug practice + local bulletin loop when comms blink.'}
+];
+
+function ensureQuests(){ if(!state.quests || state.quests.length===0){ state.quests = BASE_QUESTS; } }
+
+function renderQuests(){
+  const box = $('#questList'); box.innerHTML='';
+  state.quests.forEach((q,i)=>{
+    const div = document.createElement('div'); div.className='quest';
+    div.innerHTML = `<div><div class="name">${q.name}</div><div class="desc">${q.desc}</div></div>
+    <div class="row"><button class="btn" onclick="startQuest(${i})">Start</button><button class="btn good" onclick="completeQuest('${q.name}', ${classXP(q.xp)})">Complete +${classXP(q.xp)}</button></div>`;
+    box.appendChild(div);
+  });
+}
+function classXP(x){
+  // Simple example: Scribe gets +15% on completes, Ranger +10% outdoors (tag by name), else baseline
+  if(state.class==='Scribe') return Math.round(x*1.15);
+  if(state.class==='Ranger' && /roof|shade|forest|outdoor|micro/i.test(JSON.stringify(state.quests))) return Math.round(x*1.10);
+  return x;
+}</div><div class="desc">${q.desc}</div></div>
+    <div class="row"><button class="btn" onclick="startQuest(${i})">Start</button><button class="btn good" onclick="completeQuest('${q.name}', ${q.xp})">Complete +${q.xp}</button></div>`;
+    box.appendChild(div);
+  });
+}
+
+function startQuest(i){
+  state.logs.push({t:Date.now(), kind:'start', name:state.quests[i].name}); save(); renderLogs();
+}
+function completeQuest(name, xp){
+  state.xp += xp; if(state.xp < 0) state.xp=0; levelCheck(); updateXP();
+  state.logs.push({t:Date.now(), kind:'complete', name, xp}); save(); renderLogs(); confettiBurst();
+}
+
+function updateXP(){
+  const lvl = state.level; const need = lvl*100; const cur = state.xp % (lvl*100);
+  $('#xpVal').textContent = state.xp; $('#lvlVal').textContent = state.level; $('#xpBar').style.width = Math.min(100, (cur/need)*100)+'%';
+}
+function levelCheck(){
+  const next = (state.level)*100; if(state.xp >= next){ state.level++; unlockAchievements(); checkClassLock(); }
+  const rank = RANKS.find(r=>r.lvl===state.level) || RANKS[RANKS.length-1]; $('#rankTitle').textContent = rank.title;
+}
+  const rank = RANKS.find(r=>r.lvl===state.level) || RANKS[RANKS.length-1]; $('#rankTitle').textContent = rank.title;
+}
+
+function unlockAchievements(){
+  const checks = [
+    {id:'firstBlood', name:'First Quest', note:'Complete any quest', when:()=>state.logs.some(l=>l.kind==='complete')},
+    {id:'wardenUp', name:'Warden Rising', note:'Reach Level 3', when:()=>state.level>=3},
+    {id:'architect', name:'Systems Architect', note:'Reach Level 4', when:()=>state.level>=4}
+  ];
+  checks.forEach(c=>{ if(!state.achievements[c.id] && c.when()){ state.achievements[c.id] = {name:c.name, note:c.note, t:Date.now()}; } });
+  save(); renderAchievements();
+}
+
+function renderAchievements(){
+  const box = $('#achievements'); box.innerHTML='';
+  const defs = [
+    {id:'firstBlood', name:'First Quest', note:'Complete any quest'},
+    {id:'wardenUp', name:'Warden Rising', note:'Reach Level 3'},
+    {id:'architect', name:'Systems Architect', note:'Reach Level 4'}
+  ];
+  defs.forEach(d=>{
+    const got = !!state.achievements[d.id];
+    const el = document.createElement('div'); el.className='achv'+(got?'':' locked');
+    el.innerHTML = `<div><div><b>${d.name}</b></div><div class="tag">${d.note}</div></div><div>${got? '✅' : '🔒'}</div>`;
+    box.appendChild(el);
+  });
+}
+
+// Logs
+function renderLogs(){
+  const box = $('#logList'); if(!box) return; box.innerHTML='';
+  const fmt = (t)=> new Date(t).toLocaleString();
+  state.logs.slice().reverse().forEach(l=>{
+    const row = document.createElement('div'); row.className='achv';
+    row.innerHTML = `<div><b>${l.kind.toUpperCase()}</b> — ${l.name} ${l.xp?`(+${l.xp} XP)`:''}<div class="tag">${fmt(l.t)}</div></div>`;
+    box.appendChild(row);
+  });
+}
+
+// Daily
+// Daily claim with streak logic (overrides older binding)
+function claimDaily(){
+  const today = new Date(); const d = today.toDateString();
+  state.lastDaily = state.lastDaily || null; state.streak = state.streak || 0;
+  if(state.lastDaily === d){ alert('Already claimed today.'); return; }
+  const y = new Date(today); y.setDate(today.getDate()-1);
+  if(state.lastDaily === y.toDateString()){ state.streak += 1; } else { state.streak = 1; }
+  state.lastDaily = d; state.xp += 5; levelCheck(); updateXP(); save(); renderStreak();
+  if(state.settings?.sound) beep(); if(navigator.vibrate) navigator.vibrate(30);
+  confettiBurst();
+}
+$('#btnClaimDaily2')?.addEventListener('click', claimDaily);
+$('#btnClaimDailyBig')?.addEventListener('click', claimDaily);
+ updateXP(); save(); confettiBurst(); });
+
+// Roles
+$$('.card [data-role]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{ state.role = btn.dataset.role; $('#roleVal').textContent = state.role; save(); confettiBurst(); })
+});
+
+// Custom quest
+$('#btnAddCustom').addEventListener('click', ()=>{
+  const name = prompt('Name your quest'); if(!name) return;
+  const xp = parseInt(prompt('XP reward (e.g., 10-50)'), 10) || 10;
+  const desc = prompt('Short description') || '';
+  state.quests.push({name, xp, desc}); save(); renderQuests();
+});
+
+$('#btnPrint').addEventListener('click', ()=>window.print());
+
+// =============================================================
+// IDENTITY: ECDSA keypair + mnemonic‑derived AES‑GCM encryption
+// =============================================================
+const modal = $('#modal');
+$('#btnCreateId').addEventListener('click', ()=>{ modal.classList.add('show'); if(!$('#seedBox').value) $('#seedBox').value = randSeedWords(); });
+$('#btnCloseModal').addEventListener('click', ()=>modal.classList.remove('show'));
+$('#btnNewSeed').addEventListener('click', ()=>$('#seedBox').value = randSeedWords());
+$('#btnCopySeed').addEventListener('click', ()=>{ navigator.clipboard.writeText($('#seedBox').value.trim()); alert('Seed copied. Store it safely. Not for money.'); });
+
+$('#btnUseSeed').addEventListener('click', async()=>{
+  const seed = $('#seedBox').value.trim(); if(!seed){ alert('Enter a 12‑word seed.'); return; }
+  const akey = await pbkdf2KeyFromMnemonic(seed);
+  // generate or recover by decrypting existing
+  if(state.identity?.privEnc){
+    try{
+      const jwk = await aesDecryptJson(state.identity.privEnc, akey);
+      const priv = await importJwk(jwk, ['sign']);
+      const pub = await importJwk(state.identity.pubJwk, ['verify']);
+      const spki = await exportSpki(pub); const fp = (await sha256Hex(spki)).slice(0,16);
+      state.identity.fingerprint = fp; saveId(); $('#fpOut').textContent = fp; $('#pubOut').textContent = state.identity.pubJwk.x?.slice(0,12)+'…';
+      alert('Identity recovered.'); modal.classList.remove('show'); return;
+    }catch(e){ alert('Seed did not match existing identity. A new one will be created.'); }
+  }
+  const kp = await crypto.subtle.generateKey({name:'ECDSA', namedCurve:'P-256'}, true, ['sign','verify']);
+  const pubJwk = await exportJwk(kp.publicKey);
+  const privJwk = await exportJwk(kp.privateKey);
+  const enc = await aesEncryptJson(privJwk, akey);
+  const spki = await exportSpki(kp.publicKey); const fp = (await sha256Hex(spki)).slice(0,16);
+  state.identity = {pubJwk, privEnc:enc, fingerprint:fp}; saveId(); $('#fpOut').textContent = fp; $('#pubOut').textContent = pubJwk.x.slice(0,12)+'…';
+  modal.classList.remove('show'); confettiBurst();
+});
+
+$('#btnShowPub').addEventListener('click', ()=>{
+  if(!state.identity){ alert('No identity yet. Create one first.'); return; }
+  $('#pubOut').textContent = state.identity.pubJwk.x.slice(0,12)+'…'; $('#fpOut').textContent = state.identity.fingerprint;
+});
+
+$('#btnExportId').addEventListener('click', ()=>{
+  if(!state.identity){ alert('Create an identity first.'); return; }
+  dl('continuity-identity.json', JSON.stringify(state.identity, null, 2));
+});
+
+// Advanced deterministic option (opt‑in)
+$('#btnDeterministic').addEventListener('click', async()=>{
+  const secret = $('#advSecret').value.trim(); if(!secret) return alert('Enter your device secret.');
+  const hints = [navigator.userAgent, navigator.platform, screen.width+'x'+screen.height, Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');
+  const input = new TextEncoder().encode(secret+'|'+hints);
+  const hash = await crypto.subtle.digest('SHA-256', input);
+  const arr = Array.from(new Uint8Array(hash));
+  const words = arr.slice(0,12).map(b=>WORDS[b % WORDS.length]).join(' ');
+  $('#seedBox').value = words; modal.classList.add('show');
+});
+
+// =============================================================
+// CLASS SYSTEM
+// =============================================================
+function renderClassGrid(){
+  const g = $('#classGrid'); if(!g) return; g.innerHTML='';
+  CLASSES.forEach(c=>{
+    const card = document.createElement('div'); card.className='achv'; card.style.borderColor='var(--border)'; card.style.cursor='pointer'; card.style.background='rgba(255,255,255,.04)';
+    card.innerHTML = `<div><div style="font-weight:800;color:${c.color}">${c.id}</div><div class="tag">${c.perk}</div><div class="tag">${c.desc}</div></div><div>${state.class===c.id? '✅':'➕'}</div>`;
+    card.addEventListener('click', ()=>chooseClass(c.id)); g.appendChild(card);
+  });
+  $('#classVal')&&( $('#classVal').textContent = state.class||'None');
+  $('#classLocked')&&( $('#classLocked').textContent = state.classLocked? 'Yes':'No');
+  $('#lockLvlOut')&&( $('#lockLvlOut').textContent = CLASS_LOCK_LEVEL );
+}
+function chooseClass(id){
+  if(state.classLocked){ alert('Class is locked. Reach new eras through prestige resets (future).'); return; }
+  state.class = id; save(); renderClassGrid(); confettiBurst(); if(state.settings?.sound) beep(); if(navigator.vibrate) navigator.vibrate(20);
+}
+function checkClassLock(){ if(!state.classLocked && state.level>=CLASS_LOCK_LEVEL && state.class){ state.classLocked = true; save(); alert(`Your class '${state.class}' is now locked at Level ${CLASS_LOCK_LEVEL}.`);} }
+
+// =============================================================
+// NAV & INIT
+// =============================================================
+$$('.tab').forEach(t=>t.addEventListener('click', ()=>{
+  $$('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  const name = t.dataset.tab; ['deploy','drills','identity','logs','about'].forEach(n=>{ const el=$('#tab-'+n); if(el) el.style.display = (n===name)?'block':'none'; });
+}));
+
+function init(){
+  load(); loadId(); ensureQuests(); renderQuests(); updateXP(); levelCheck(); renderAchievements(); renderLogs();
+  if(state.role) $('#roleVal').textContent = state.role;
+  renderClassGrid();
+  // Service worker (optional; cache this page). Works when served over https or localhost.
+  if('serviceWorker' in navigator){
+    const swCode = `self.addEventListener('install',e=>{e.waitUntil(caches.open('cn-v1').then(c=>c.addAll([self.location.href])))}); self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))})`;
+    const blob = new Blob([swCode], {type:'text/javascript'});
+    const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url).catch(()=>{});
+  }
+}
+init();
+
+// =============================================================
+// NEW: Streaks, Avatar, Crew, Settings, Install, Share
+// =============================================================
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; });
+
+function untilMidnight(){ const n = new Date(); const m = new Date(n); m.setHours(24,0,0,0); return Math.max(0, m-n); }
+function renderTTL(){ const ms = untilMidnight(); const h = Math.floor(ms/3600000); const m = Math.floor((ms%3600000)/60000); $('#ttl')&&($('#ttl').textContent = `${h}h ${m}m`); }
+setInterval(renderTTL, 60000);
+
+function renderStreak(){ $('#streakVal')&&($('#streakVal').textContent = state.streak||0); $('#streakBig')&&($('#streakBig').textContent = state.streak||0); }
+
+// Settings defaults
+function defaults(){ state.settings = state.settings || {theme:'dark', sound:true, font:100}; state.crew = state.crew || []; state.lastDaily = state.lastDaily || null; state.streak = state.streak || 0; }
+
+// Sound
+function beep(){ try{ const ctx = new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.frequency.value=880; g.gain.setValueAtTime(0.001, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime+0.02); o.start(); o.stop(ctx.currentTime+0.12);}catch(e){} }
+
+// Theme
+function applyTheme(){ document.documentElement.setAttribute('data-theme', state.settings.theme); document.body.style.fontSize = state.settings.font+'%'; $('#soundVal')&&($('#soundVal').textContent = state.settings.sound? 'On':'Off'); }
+$('#btnThemeDark')?.addEventListener('click', ()=>{ state.settings.theme='dark'; save(); applyTheme(); });
+$('#btnThemeLight')?.addEventListener('click', ()=>{ state.settings.theme='light'; save(); applyTheme(); });
+$('#btnThemeHigh')?.addEventListener('click', ()=>{ state.settings.theme='high'; save(); applyTheme(); });
+$('#btnSound')?.addEventListener('click', ()=>{ state.settings.sound=!state.settings.sound; save(); applyTheme(); });
+$('#fontRange')?.addEventListener('input', (e)=>{ state.settings.font = parseInt(e.target.value,10); applyTheme(); save(); });
+
+// Install
+$('#btnInstall')?.addEventListener('click', async()=>{ if(!deferredPrompt){ alert('If your browser supports install, a prompt will appear here when available.'); return;} deferredPrompt.prompt(); const res = await deferredPrompt.userChoice; console.log(res); deferredPrompt=null; });
+
+// State import/export (full)
+$('#btnExportState')?.addEventListener('click', ()=>{ dl('continuity-state.json', JSON.stringify({state, identity:state.identity}, null, 2)); });
+$('#btnImportState')?.addEventListener('click', ()=>{
+  const inp = document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange = async()=>{ const file = inp.files[0]; const txt = await file.text(); try{ const obj = JSON.parse(txt); Object.assign(state, obj.state||{}); if(obj.identity) state.identity=obj.identity; save(); saveId(); location.reload(); }catch(e){ alert('Invalid file'); } };
+  inp.click();
+});
+
+// Squad code (fingerprint or pubkey hash)
+function getFingerprint(){ if(state.identity?.fingerprint) return state.identity.fingerprint; // fallback
+  return (Math.random().toString(16).slice(2,10)+Math.random().toString(16).slice(2,10)).slice(0,16); }
+function refreshCode(){ const code = getFingerprint(); $('#squadCode')&&($('#squadCode').textContent = code); drawAvatarMini(code); drawAvatar(code); }
+$('#btnCopyCode')?.addEventListener('click', ()=>{ const t = $('#squadCode').textContent; navigator.clipboard.writeText(t); });
+
+$('#btnAddFriend')?.addEventListener('click', ()=>{ const code = $('#friendCode').value.trim(); if(!code) return; state.crew.push({code, note:'friend', at:Date.now()}); save(); renderCrew(); $('#friendCode').value=''; });
+function renderCrew(){ const box = $('#crewList'); if(!box) return; box.innerHTML=''; if((state.crew||[]).length===0){ box.innerHTML='<p class="hint">No crew yet. Add a friend code.</p>'; return; }
+  state.crew.forEach(c=>{ const div = document.createElement('div'); div.className='achv'; div.innerHTML = `<div><b>${c.code}</b><div class="tag">added ${new Date(c.at).toLocaleDateString()}</div></div><div><button class="btn" data-kill="${c.code}">Remove</button></div>`; box.appendChild(div); });
+  box.querySelectorAll('button[data-kill]')?.forEach(b=> b.addEventListener('click', ()=>{ const code=b.getAttribute('data-kill'); state.crew = state.crew.filter(x=>x.code!==code); save(); renderCrew(); }));
+}
+
+// Avatar (identicon)
+function drawIdent(canvas, seed){ const ctx = canvas.getContext('2d'); const N=5; const cell = canvas.width/N; // mirror left->right
+  // hash to bytes
+  let h=0; for(let i=0;i<seed.length;i++){ h=(h*31 + seed.charCodeAt(i))>>>0; }
+  ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='rgba(255,255,255,.06)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  for(let y=0;y<N;y++){
+    for(let x=0;x<Math.ceil(N/2);x++){
+      h = (h*1664525 + 1013904223)>>>0; const on = (h & 0xFF) > 140; if(on){
+        const gx1=x*cell, gx2=(N-1-x)*cell; const gy=y*cell; ctx.fillStyle = ['#22d3ee','#7c3aed','#22c55e','#f59e0b'][ (h>>>8)%4 ];
+        ctx.fillRect(gx1, gy, cell-2, cell-2); ctx.fillRect(gx2, gy, cell-2, cell-2);
+      }
+    }
+  }
+}
+function drawAvatar(seed){ const c = $('#avatarCanvas'); if(!c) return; drawIdent(c, seed); }
+function drawAvatarMini(seed){ const c = $('#avatarMini'); if(!c) return; drawIdent(c, seed); }
+$('#btnRerollAvatar')?.addEventListener('click', ()=>{ const r = Math.random().toString(36).slice(2,10); drawAvatar(r); });
+$('#btnSaveAvatar')?.addEventListener('click', ()=>{ const c=$('#avatarCanvas'); const url=c.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download='guardian-sigil.png'; a.click(); });
+
+// Override completeQuest to add haptics/sound
+const _completeQuest = window.completeQuest;
+window.completeQuest = function(){ _completeQuest.apply(this, arguments); if(state.settings?.sound) beep(); if(navigator.vibrate) navigator.vibrate(20); };
+
+// Init extras
+function extrasInit(){ defaults(); applyTheme(); refreshCode(); renderCrew(); renderStreak(); renderTTL();
+  // bind streak buttons if user navigates after load
+  $('#btnClaimDaily2')&&($('#btnClaimDaily2').addEventListener('click', claimDaily));
+  $('#btnClaimDailyBig')&&($('#btnClaimDailyBig').addEventListener('click', claimDaily));
+}
+extrasInit();
+</script>
+</body>
+</html>

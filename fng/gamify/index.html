@@ -1,0 +1,618 @@
+<!---- SECTION 1 / 16: DOCTYPE & HTML START (PASTE AS THE VERY FIRST LINES) ---->
+<!DOCTYPE html>
+<html lang="en">
+<!---- END SECTION 1 / 16 ---->
+
+<!---- SECTION 2 / 16: HEAD & META (OPEN <head> AND KEEP IT OPEN) ---->
+<head>
+  <!-- SECTION: HEAD & META -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Continuity Node — NextGen Field Kit</title>
+  <meta name="description" content="Zero-budget, next-gen continuity playbook with gamified drills, offline cache, and privacy-first device identity."/>
+<!---- END SECTION 2 / 16 ---->
+
+<!---- SECTION 3 / 16: THEME TOKENS & BASE (CSS) ---->
+  <style>
+    /* SECTION: THEME TOKENS & BASE */
+    :root{
+      --bg:#0b0f14; --bg-soft:#0f1520; --ink:#e6f1ff; --muted:#9fb3c8;
+      --glow-1:#7c3aed; --glow-2:#22d3ee; --glow-3:#22c55e; --glow-4:#f59e0b;
+      --bad:#ef4444; --good:#10b981; --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.12); --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell; color:var(--ink);
+      background:
+        radial-gradient(1200px 1200px at 120% -10%, rgba(124,58,237,.15), transparent 60%),
+        radial-gradient(1000px 1000px at -20% 10%, rgba(34,211,238,.12), transparent 60%),
+        linear-gradient(180deg, #0b0f14 0%, #0b0f14 100%);
+      overflow-x:hidden;
+    }
+    a{color:var(--glow-2); text-decoration:none}
+    .wrap{max-width:1180px; margin:0 auto; padding:28px;}
+
+    /* Header */
+    .hero{position:relative; margin:18px 0 26px; padding:20px; border-radius:var(--radius); background:var(--card); border:1px solid var(--border); box-shadow:var(--shadow);}
+    .title{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+    .title h1{margin:4px 0 0; font-size:clamp(22px, 4vw, 42px); letter-spacing:.3px; font-weight:800;}
+    .badge{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:linear-gradient(135deg, rgba(124,58,237,.3), rgba(34,211,238,.25)); border:1px solid var(--border); border-radius:999px; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:1px}
+    .hero p{margin:8px 0 0; color:var(--muted)}
+
+    /* Nav */
+    .tabs{display:flex; gap:10px; flex-wrap:wrap; margin:16px 0 0}
+    .tab{padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid var(--border); cursor:pointer; user-select:none}
+    .tab.active{background:linear-gradient(135deg, rgba(34,211,238,.18), rgba(124,58,237,.18));}
+
+    /* Grid */
+    .grid{display:grid; grid-template-columns:repeat(12, 1fr); gap:16px; margin-top:18px}
+    .col-4{grid-column:span 12}
+    .col-8{grid-column:span 12}
+    @media (min-width:900px){ .col-4{grid-column:span 4} .col-8{grid-column:span 8} }
+
+    /* Cards */
+    .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px}
+    .card h3{margin:0 0 8px}
+    .card p{margin:6px 0; color:var(--muted)}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .chip{padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--border); font-size:12px;}
+
+    /* Progress */
+    .meter{height:12px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; overflow:hidden}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--glow-2), var(--glow-1)); transition:width .6s ease}
+
+    /* Buttons */
+    .btn{appearance:none; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--ink); padding:10px 14px; border-radius:12px; cursor:pointer}
+    .btn:hover{filter:brightness(1.05)}
+    .btn.primary{background:linear-gradient(135deg, rgba(34,211,238,.22), rgba(124,58,237,.22));}
+    .btn.good{background:linear-gradient(135deg, rgba(34,197,94,.22), rgba(16,185,129,.22));}
+    .btn.bad{background:linear-gradient(135deg, rgba(239,68,68,.22), rgba(245,158,11,.22));}
+
+    /* Quest list */
+    .quest{display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px; border-radius:14px; border:1px dashed var(--border); background:rgba(255,255,255,.04); margin:10px 0}
+    .quest .name{font-weight:700}
+    .quest .desc{color:var(--muted); font-size:13px}
+
+    /* Achievements */
+    .achv{display:grid; grid-template-columns:1fr auto; gap:8px; padding:10px; margin:8px 0; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px}
+    .achv .tag{font-size:12px; color:var(--muted)}
+    .achv.locked{opacity:.55}
+
+    /* Identity modal */
+    .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(2,6,12,.65); backdrop-filter:saturate(140%) blur(12px);}
+    .modal.show{display:grid}
+    .dialog{width:min(720px, 94vw); background:var(--bg-soft); border:1px solid var(--border); border-radius:20px; padding:18px; box-shadow:var(--shadow)}
+    .dialog h2{margin:0}
+    textarea.seed{width:100%; min-height:74px; resize:vertical; background:rgba(255,255,255,.04); color:var(--ink); border:1px solid var(--border); border-radius:12px; padding:10px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
+
+    /* Footer */
+    footer{color:var(--muted); font-size:12px; padding:30px 10px; text-align:center}
+
+    /* Glow ring accents */
+    .glow{position:relative; isolation:isolate;}
+    .glow:before{
+      content:""; position:absolute; inset:-2px; z-index:-1; border-radius:inherit;
+      background:conic-gradient(from 180deg, var(--glow-2), var(--glow-1), var(--glow-3), var(--glow-2));
+      filter:blur(18px); opacity:.16;
+    }
+
+    /* Confetti */
+    .confetti{position:fixed; pointer-events:none; inset:0; overflow:hidden}
+    .flake{position:absolute; width:6px; height:10px; border-radius:2px; opacity:.9}
+
+    /* THEME VARIANTS + FUN EXTRAS */
+    :root[data-theme="light"]{
+      --bg:#f6fbff; --bg-soft:#ffffff; --ink:#0b1220; --muted:#516172; --card:rgba(0,0,0,.04); --border:rgba(0,0,0,.12);
+    }
+    :root[data-theme="high"]{
+      --bg:#000; --bg-soft:#000; --ink:#fff; --muted:#aab; --card:#000; --border:#fff4;
+    }
+    .hint{font-size:12px; color:var(--muted)}
+    .kbd{display:inline-block; padding:2px 6px; border-radius:6px; border:1px solid var(--border); background:rgba(255,255,255,.06); font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px}
+  </style>
+</head>
+<!---- END SECTION 3 / 16 ---->
+
+<!---- SECTION 4 / 16: APP BODY START + HERO/NAV (OPEN <body> AND KEEP IT OPEN) ---->
+<body>
+  <!-- SECTION: APP BODY START -->
+  <div class="wrap">
+    <!-- SECTION: HERO / NAV -->
+    <section class="hero glow">
+      <div class="title">
+        <span class="badge">Continuity Node v1</span>
+        <h1>Post-Collapse Field Kit — <span style="background:linear-gradient(90deg,var(--glow-2),var(--glow-1)); -webkit-background-clip:text; background-clip:text; color:transparent">Deploy Now</span></h1>
+      </div>
+      <p>Zero-budget actions that young guardians can inherit. Gamified drills. Offline cache. Privacy-first device identity (no MAC access).</p>
+      <div class="tabs" role="tablist">
+        <div class="tab active" data-tab="deploy" role="tab" aria-selected="true">Deploy</div>
+        <div class="tab" data-tab="drills" role="tab">Drills</div>
+        <div class="tab" data-tab="identity" role="tab">Identity</div>
+        <div class="tab" data-tab="class" role="tab">Class</div>
+        <div class="tab" data-tab="streaks" role="tab">Streaks</div>
+        <div class="tab" data-tab="avatar" role="tab">Avatar</div>
+        <div class="tab" data-tab="crew" role="tab">Crew</div>
+        <div class="tab" data-tab="settings" role="tab">Settings</div>
+        <div class="tab" data-tab="logs" role="tab">Logs & Export</div>
+        <div class="tab" data-tab="about" role="tab">About</div>
+      </div>
+    </section>
+<!---- END SECTION 4 / 16 ---->
+
+<!---- SECTION 5 / 16: LAYOUT GRID START ---->
+  <!-- SECTION: LAYOUT GRID -->
+  <div class="grid">
+    <!-- LEFT: XP / Roles / Achievements -->
+    <aside class="col-4">
+      <!-- SECTION: SIDEBAR — RANK/PROGRESS -->
+      <div class="card">
+        <h3>Rank & Progress</h3>
+        <p class="muted">Earn XP by completing real-world continuity quests.</p>
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <div>
+            <div style="font-size:28px; font-weight:800" id="rankTitle">Initiate</div>
+            <div style="color:var(--muted)">
+              <span id="xpVal">0</span> XP • L<span id="lvlVal">1</span> • Streak <b id="streakVal">0</b>🔥
+            </div>
+          </div>
+          <canvas id="avatarMini" width="64" height="64" style="border-radius:12px; border:1px solid var(--border)"></canvas>
+        </div>
+        <div class="meter" style="margin-top:10px">
+          <div class="bar" id="xpBar"></div>
+        </div>
+        <div class="row" style="margin-top:10px; justify-content:space-between">
+          <button class="btn primary" id="btnClaimDaily2">Claim Daily +5</button>
+          <span class="hint">Resets at local midnight • Next in <span id="ttl">—</span></span>
+        </div>
+      </div>
+
+      <!-- SECTION: SIDEBAR — ROLE -->
+      <div class="card" style="margin-top:16px">
+        <h3>Guardian Role</h3>
+        <p class="muted">Choose a role. Each unlocks themed quests.</p>
+        <div class="row">
+          <button class="btn" data-role="Heat Warden">Heat Warden</button>
+          <button class="btn" data-role="Air Warden">Air Warden</button>
+          <button class="btn" data-role="Signal Warden">Signal Warden</button>
+        </div>
+        <p style="margin-top:10px">Current: <b id="roleVal">None</b></p>
+      </div>
+
+      <!-- SECTION: SIDEBAR — ACHIEVEMENTS -->
+      <div class="card" style="margin-top:16px">
+        <h3>Achievements</h3>
+        <div id="achievements"></div>
+      </div>
+    </aside>
+<!---- END SECTION 5 / 16 ---->
+
+<!---- SECTION 6 / 16: MAIN PANELS START (DEPLOY TAB) ---->
+    <!-- RIGHT: Dynamic Content by tab -->
+    <main class="col-8">
+      <!-- DEPLOY TAB -->
+      <!-- PANEL: DEPLOY -->
+      <section id="tab-deploy" class="card">
+        <h3>Deploy: Fast Wins</h3>
+        <p>Three quests you can run today. Each is teen-teachable and cloneable.</p>
+        <div id="questList"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn good" id="btnAddCustom">+ Custom Quest</button>
+          <button class="btn" id="btnPrint">Print Field Card</button>
+        </div>
+      </section>
+<!---- END SECTION 6 / 16 ---->
+
+<!---- SECTION 7 / 16: DRILLS TAB PANEL ---->
+      <!-- DRILLS TAB -->
+      <!-- PANEL: DRILLS -->
+      <section id="tab-drills" class="card" style="display:none">
+        <h3>Drills</h3>
+
+        <div class="quest">
+          <div>
+            <div class="name">Heat-Blackout Drill</div>
+            <div class="desc">Mid-day: simulate power loss. Set up cool-room, pace activity, skin cooling. Log learnings.</div>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="completeQuest('Heat-Blackout Drill',15)">Complete +15</button>
+          </div>
+        </div>
+
+        <div class="quest">
+          <div>
+            <div class="name">Aurora (Comms) Drill</div>
+            <div class="desc">Simulate internet/phone outage. Practice unplug protocol and bulletin hub loop.</div>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="completeQuest('Aurora Drill',15)">Complete +15</button>
+          </div>
+        </div>
+
+        <div class="quest">
+          <div>
+            <div class="name">Smoke-Safe Room Setup</div>
+            <div class="desc">DIY purifier + MERV-13 fan build. Verify PM drop if sensor available.</div>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="completeQuest('Smoke Room Drill',15)">Complete +15</button>
+          </div>
+        </div>
+      </section>
+<!---- END SECTION 7 / 16 ---->
+
+<!---- SECTION 8 / 16: IDENTITY TAB PANEL ---->
+      <!-- IDENTITY TAB -->
+      <!-- PANEL: IDENTITY -->
+      <section id="tab-identity" class="card" style="display:none">
+        <h3>Device Identity (Private, Local)</h3>
+        <p class="muted">
+          Browsers cannot access your MAC address (by design). We generate a
+          <b>local, device-bound keypair</b> and a <b>mnemonic</b> for recovery.
+          <u>Never reuse this mnemonic for money or crypto wallets</u>. It’s only for this app.
+        </p>
+        <div class="row" style="margin-top:8px">
+          <button class="btn primary" id="btnCreateId">Create / Recover Identity</button>
+          <button class="btn" id="btnShowPub">Show Public ID</button>
+          <button class="btn" id="btnExportId">Export Identity JSON</button>
+        </div>
+        <div style="margin-top:10px">
+          <div>Public ID: <code id="pubOut">—</code></div>
+          <div>Fingerprint: <code id="fpOut">—</code></div>
+        </div>
+        <details style="margin-top:12px">
+          <summary>Advanced (opt-in): Deterministic seed from device hints</summary>
+          <p class="muted">
+            For educational use only. Combines your typed secret with basic device
+            hints (UA, platform, screen) to derive the same mnemonic on this device.
+            Less private, do not use for funds.
+          </p>
+          <input id="advSecret" placeholder="Enter your device secret" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--ink)"/>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="btnDeterministic">Generate Deterministic Seed</button>
+          </div>
+        </details>
+      </section>
+<!---- END SECTION 8 / 16 ---->
+
+<!---- SECTION 9 / 16: CLASS SYSTEM TAB PANEL ---->
+      <!-- PANEL: CLASS SYSTEM -->
+      <section id="tab-class" class="card" style="display:none">
+        <h3>Choose Your Class</h3>
+        <p class="muted">
+          You can switch freely until Level <b id="lockLvlOut">7</b>. After that,
+          you’ll pick a permanent(ish) role. Each class adds passive bonuses and unique quests.
+        </p>
+        <div id="classGrid" class="row"></div>
+        <div style="margin-top:12px">
+          Current Class: <b id="classVal">None</b> • Locked: <b id="classLocked">No</b>
+        </div>
+      </section>
+<!---- END SECTION 9 / 16 ---->
+
+<!---- SECTION 10 / 16: STREAKS TAB PANEL ---->
+      <!-- STREAKS TAB -->
+      <section id="tab-streaks" class="card" style="display:none">
+        <h3>Daily Streak</h3>
+        <p class="muted">Show up once a day and do one tiny action. Momentum beats overwhelm.</p>
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <div style="font-size:26px; font-weight:800">🔥 <span id="streakBig">0</span> days</div>
+          <button class="btn primary" id="btnClaimDailyBig">Claim Today +5</button>
+        </div>
+        <p class="hint" style="margin-top:8px">
+          Tip: Add a <span class="kbd">homescreen</span> shortcut and tie claiming to brushing teeth or morning stretch.
+        </p>
+      </section>
+<!---- END SECTION 10 / 16 ---->
+
+<!---- SECTION 11 / 16: AVATAR TAB PANEL ---->
+      <!-- AVATAR TAB -->
+      <section id="tab-avatar" class="card" style="display:none">
+        <h3>Your Guardian Sigil</h3>
+        <p class="muted">Auto-generated from your public key or fingerprint. No upload needed.</p>
+        <canvas id="avatarCanvas" width="200" height="200" style="border-radius:20px; border:1px solid var(--border)"></canvas>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnRerollAvatar">Reroll</button>
+          <button class="btn" id="btnSaveAvatar">Save PNG</button>
+        </div>
+      </section>
+<!---- END SECTION 11 / 16 ---->
+
+<!---- SECTION 12 / 16: CREW TAB PANEL ---->
+      <!-- CREW TAB -->
+      <section id="tab-crew" class="card" style="display:none">
+        <h3>Crew</h3>
+        <p class="muted">Form a local squad without servers. Share a code, import a friend’s export, and compare XP (offline/local).</p>
+        <div>
+          My Squad Code: <code id="squadCode">—</code>
+          <button class="btn" id="btnCopyCode">Copy</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <input id="friendCode" placeholder="Friend code or fingerprint" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--ink)"/>
+          <button class="btn" id="btnAddFriend">Add</button>
+        </div>
+        <div id="crewList" style="margin-top:10px"></div>
+      </section>
+<!---- END SECTION 12 / 16 ---->
+
+<!---- SECTION 13 / 16: SETTINGS TAB PANEL ---->
+      <!-- SETTINGS TAB -->
+      <section id="tab-settings" class="card" style="display:none">
+        <h3>Settings</h3>
+        <div class="row" style="gap:14px">
+          <button class="btn" id="btnThemeDark">Dark</button>
+          <button class="btn" id="btnThemeLight">Light</button>
+          <button class="btn" id="btnThemeHigh">High Contrast</button>
+          <button class="btn" id="btnSound">Sound: <span id="soundVal">On</span></button>
+        </div>
+        <div style="margin-top:12px">
+          <label class="hint">Font size</label>
+          <input type="range" id="fontRange" min="90" max="120" value="100"/>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn" id="btnInstall">Install App</button>
+          <button class="btn" id="btnImportState">Import State</button>
+          <button class="btn" id="btnExportState">Export State</button>
+        </div>
+      </section>
+<!---- END SECTION 13 / 16 ---->
+
+<!---- SECTION 14 / 16: LOGS & EXPORT TAB PANEL ---->
+      <!-- LOGS TAB -->
+      <!-- PANEL: LOGS -->
+      <section id="tab-logs" class="card" style="display:none">
+        <h3>Impact Log</h3>
+        <p class="muted">Your actions, stored locally. Export to share or archive offline.</p>
+        <div id="logList"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnExportLog">Export .json</button>
+          <button class="btn" id="btnClearLog">Clear</button>
+        </div>
+      </section>
+<!---- END SECTION 14 / 16 ---->
+
+<!---- SECTION 15 / 16: ABOUT TAB PANEL ---->
+      <!-- ABOUT TAB -->
+      <!-- PANEL: ABOUT -->
+      <section id="tab-about" class="card" style="display:none">
+        <h3>Zero-Budget Continuity</h3>
+        <p>Designed to inspire “the young farts” to inherit patterns, not problems. Everything here runs client-side and saves to your browser only.</p>
+        <ul>
+          <li>Quests: White roofs & shade blitz, smoke-safe rooms, aurora drills.</li>
+          <li>Identity: ECDSA P-256 keypair; private key encrypted with a mnemonic-derived key (AES-GCM). No servers.</li>
+          <li>Offline: Optional service worker caches this app (if your browser allows it from file/host).</li>
+        </ul>
+        <p style="color:var(--muted)">
+          Security note: This seed & key are <b>not for money</b>. They are an app-specific identity to sync logs between sessions on the <i>same device</i>, or to restore if you wipe storage. For crypto, use hardware wallets and audited libs.
+        </p>
+      </section>
+<!---- END SECTION 15 / 16 ---->
+
+
+<!---- SECTION 16 / 16: LAYOUT CLOSE & FOOTER/MODAL HOOKS ---->
+    </main>
+  </div> <!-- end .grid -->
+</div> <!-- end .wrap -->
+
+<!-- Identity Modal -->
+<div class="modal" id="modal">
+  <div class="dialog">
+    <h2>Device Identity</h2>
+    <p class="muted">
+      Create or recover. Your mnemonic never leaves this device. Keep a paper copy safe. 
+      Do <b>not</b> reuse for money.
+    </p>
+    <textarea class="seed" id="seedBox" placeholder="Click &quot;New Seed&quot; or paste your 12 words here…"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnNewSeed">New Seed</button>
+      <button class="btn" id="btnCopySeed">Copy</button>
+      <button class="btn good" id="btnUseSeed">Use This Seed</button>
+      <button class="btn bad" id="btnCloseModal">Close</button>
+    </div>
+    <details style="margin-top:12px"><summary>Privacy</summary>
+      <p class="muted">
+        No MAC address is accessed. Browsers block it for your safety. 
+        We use secure randomness (or opt-in deterministic hints) to derive a mnemonic, 
+        then encrypt the private key with it.
+      </p>
+    </details>
+  </div>
+</div>
+
+<!-- Confetti Layer -->
+<div class="confetti" id="confetti"></div>
+
+<!-- Footer -->
+<footer>
+  Continuity Node © 2025 — Built zero-budget for next-gen guardians 🌍
+</footer>
+
+<!-- Scripts will follow here -->
+
+<!---- PATCH: FNG OVERLAY (paste near end of your <script> or as a new <script>) ---->
+<script>
+// ============ FNG OVERLAY (deploy/fng) ============
+// Triggers when URL contains /deploy/fng or hash #fng (for local files).
+// Persists "seen" in localStorage. Minimizable to a floating orb.
+// No external deps; a11y-friendly; small XP reward on accept.
+
+(function(){
+  const SEEN_KEY = 'cn_fng_seen_v1';
+  const MIN_KEY  = 'cn_fng_min_v1';
+  const wantsFNG = /\/deploy\/fng\b/i.test(location.pathname) || /(^|#)fng\b/i.test(location.hash);
+  const alreadySeen = localStorage.getItem(SEEN_KEY) === '1';
+
+  // Inject CSS once
+  const css = `
+  .fng-overlay-backdrop{
+    position:fixed; inset:0; display:none; place-items:end center; padding:clamp(8px,2vw,16px);
+    background:radial-gradient(1200px 800px at 50% -10%, rgba(124,58,237,.25), transparent 60%),
+               linear-gradient(180deg, rgba(8,12,18,.70), rgba(8,12,18,.40));
+    backdrop-filter:saturate(140%) blur(10px);
+    z-index:9999;
+  }
+  .fng-overlay-backdrop.show{ display:grid; }
+  .fng-panel{
+    width:min(920px, 96vw);
+    background:rgba(17, 24, 39, .86);
+    border:1px solid var(--border, #ffffff22);
+    border-radius:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    overflow:hidden;
+    color:var(--ink, #e6f1ff);
+  }
+  .fng-head{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:16px 16px 12px 16px; border-bottom:1px solid var(--border, #ffffff22);
+    background:linear-gradient(135deg, rgba(34,211,238,.12), rgba(124,58,237,.10));
+  }
+  .fng-title{
+    display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px;
+    font-size:clamp(16px,2.4vw,20px);
+  }
+  .fng-chip{ padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--border,#ffffff22); font-size:12px; }
+  .fng-body{ padding:14px 16px 4px 16px; }
+  .fng-grid{ display:grid; gap:12px; grid-template-columns:1fr; }
+  @media (min-width:880px){ .fng-grid{ grid-template-columns:1fr 1fr; } }
+  .fng-card{
+    background:rgba(255,255,255,.04); border:1px dashed var(--border,#ffffff22); border-radius:16px; padding:12px;
+  }
+  .fng-card h4{ margin:0 0 6px; font-size:16px; font-weight:800; }
+  .fng-card p{ margin:0; color:var(--muted,#9fb3c8); font-size:13px; }
+  .fng-foot{
+    display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center;
+    padding:12px 16px 16px;
+  }
+  .fng-left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .fng-right{ display:flex; gap:10px; }
+  .fng-btn{ appearance:none; border:1px solid var(--border,#ffffff22); border-radius:12px; padding:10px 14px; background:rgba(255,255,255,.06); color:var(--ink,#e6f1ff); cursor:pointer; }
+  .fng-btn.primary{ background:linear-gradient(135deg, rgba(34,211,238,.22), rgba(124,58,237,.22)); }
+  .fng-btn.ghost{ background:transparent; }
+  .fng-minibtn{
+    position:fixed; right:16px; bottom:16px; width:56px; height:56px; border-radius:999px;
+    border:1px solid var(--border,#ffffff22); background:linear-gradient(135deg, rgba(34,211,238,.25), rgba(124,58,237,.25));
+    color:#fff; font-weight:900; cursor:pointer; box-shadow:0 12px 30px rgba(0,0,0,.45); z-index:9998;
+    display:none;
+  }
+  .fng-minibtn.show{ display:block; }
+  `;
+  const style = document.createElement('style'); style.textContent = css; document.head.appendChild(style);
+
+  // Build overlay DOM
+  const backdrop = document.createElement('div'); backdrop.className = 'fng-overlay-backdrop'; backdrop.setAttribute('role','dialog'); backdrop.setAttribute('aria-modal','true'); backdrop.setAttribute('aria-labelledby','fng-title');
+  backdrop.innerHTML = `
+    <div class="fng-panel">
+      <div class="fng-head">
+        <div class="fng-title" id="fng-title">Welcome, <span class="fng-chip">FNG</span></div>
+        <div class="fng-left">
+          <span class="fng-chip">/deploy/fng</span>
+          <span class="fng-chip">Zero-Budget Loadout</span>
+        </div>
+      </div>
+      <div class="fng-body">
+        <div class="fng-grid">
+          <div class="fng-card">
+            <h4>1) Claim your Daily</h4>
+            <p>Punch in once a day. Momentum beats overwhelm. <i>+5 XP</i></p>
+          </div>
+          <div class="fng-card">
+            <h4>2) Take a Fast Win</h4>
+            <p>Run one quest: White Roof Blitz, Smoke-Safe Room, or Aurora Drill.</p>
+          </div>
+          <div class="fng-card">
+            <h4>3) Pick a Class (temp)</h4>
+            <p>Switch anytime until Level 7. Perks shape what you notice.</p>
+          </div>
+          <div class="fng-card">
+            <h4>4) Make a Crew</h4>
+            <p>Share your code offline. Compare XP locally. No servers.</p>
+          </div>
+        </div>
+      </div>
+      <div class="fng-foot">
+        <div class="fng-left">
+          <span class="fng-chip">Local-only</span>
+          <span class="fng-chip">Installable</span>
+          <span class="fng-chip">No MAC access</span>
+        </div>
+        <div class="fng-right">
+          <button class="fng-btn ghost" id="fng-minimize">Minimize</button>
+          <button class="fng-btn" id="fng-skip">Skip for now</button>
+          <button class="fng-btn primary" id="fng-accept">Accept Loadout</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(backdrop);
+
+  // Mini orb
+  const mini = document.createElement('button');
+  mini.className = 'fng-minibtn';
+  mini.setAttribute('aria-label','Open FNG Briefing');
+  mini.textContent = 'FNG';
+  document.body.appendChild(mini);
+
+  // Helpers
+  function openOverlay(){ backdrop.classList.add('show'); mini.classList.remove('show'); try{ backdrop.querySelector('#fng-accept').focus(); }catch{} }
+  function closeOverlay(){ backdrop.classList.remove('show'); }
+  function minimizeOverlay(){ closeOverlay(); mini.classList.add('show'); localStorage.setItem(MIN_KEY,'1'); }
+  function markSeen(){ localStorage.setItem(SEEN_KEY,'1'); }
+  function switchTab(name){
+    // Prefer clicking the tab for consistent ARIA states
+    const btn = document.querySelector(`.tabs .tab[data-tab="${name}"]`);
+    if(btn){ btn.click(); return; }
+    // Fallback: brute toggle if router hasn't been patched yet
+    const all = ['deploy','drills','identity','class','streaks','avatar','crew','settings','logs','about'];
+    all.forEach(n=>{ const el = document.querySelector('#tab-'+n); if(el) el.style.display = (n===name)?'block':'none'; });
+  }
+  function awardXP(n, name){
+    try{
+      // leverage your existing completeQuest pipeline if present; otherwise, direct
+      if(typeof window.completeQuest==='function'){ window.completeQuest(name||'FNG Briefing', n||5); }
+      else{
+        if(window.state){ window.state.xp = (window.state.xp||0) + (n||5); if(typeof updateXP==='function') updateXP(); if(typeof levelCheck==='function') levelCheck(); if(typeof save==='function') save(); }
+      }
+      if(typeof confettiBurst==='function') confettiBurst();
+    }catch{}
+  }
+
+  // Events
+  backdrop.addEventListener('click', (e)=>{ if(e.target===backdrop){ minimizeOverlay(); } });
+  backdrop.querySelector('#fng-minimize').addEventListener('click', minimizeOverlay);
+  backdrop.querySelector('#fng-skip').addEventListener('click', ()=>{ markSeen(); minimizeOverlay(); });
+  backdrop.querySelector('#fng-accept').addEventListener('click', ()=>{
+    markSeen();
+    closeOverlay();
+    // Small onramp: go to Deploy, try to focus the daily/streak button, and give +5 XP for onboarding.
+    switchTab('deploy');
+    awardXP(5, 'FNG Briefing');
+    const btn = document.querySelector('#btnClaimDaily2') || document.querySelector('#btnClaimDailyBig');
+    if(btn) btn.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}], {duration:500, easing:'ease-out'});
+  });
+  mini.addEventListener('click', ()=>{ openOverlay(); localStorage.setItem(MIN_KEY,'0'); });
+
+  // Keyboard escape to minimize
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && backdrop.classList.contains('show')) minimizeOverlay(); });
+
+  // Public hook (optional): window.openFNG()
+  window.openFNG = openOverlay;
+
+  // Boot logic
+  const minimized = localStorage.getItem(MIN_KEY) === '1';
+  if(wantsFNG && !alreadySeen){
+    openOverlay();
+  }else if(wantsFNG && alreadySeen && minimized){
+    mini.classList.add('show');
+  }else{
+    // If user hits #fng manually later, show it
+    window.addEventListener('hashchange', ()=>{ if((/^#?fng$/i).test(location.hash.replace('#',''))) openOverlay(); });
+  }
+})();
+</script>
+<!---- END PATCH: FNG OVERLAY ---->
+
+
+<!---- END SECTION 16 / 16 ---->
+
